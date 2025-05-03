@@ -1,0 +1,21 @@
+# This is a generated file. Not intended for manual editing.
+services:
+  bookify.api:
+    build:
+      context: "D:\\projects\\net8\\Bookify"
+      dockerfile: "src/Bookify.Api/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net8.0/Bookify.Api.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "bookifyapi:dev"
+    ports: []
+    volumes:
+    - "D:\\projects\\net8\\Bookify\\src\\Bookify.Api:/app:rw"
+    - "D:\\projects\\net8\\Bookify:/src:rw"
+    - "C:\\Users\\minhn\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
