@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
-using Bookify.ShareKernel.Error;
+using Bookify.ShareKernel.Errors;
 using Bookify.ShareKernel.Exceptions;
-using Bookify.ShareKernel.Result;
+using Bookify.ShareKernel.Utilities;
 using FluentValidation;
 using FluentValidation.Results;
 using MediatR;

@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Bookify.ShareKernel.Specification;
+using Bookify.ShareKernel.Specifications;
 
 namespace Bookify.Application.Abstractions.Extensions;
 

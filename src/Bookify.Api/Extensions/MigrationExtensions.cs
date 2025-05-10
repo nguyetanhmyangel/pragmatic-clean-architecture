@@ -1,4 +1,5 @@
 ﻿using Bookify.Infrastructure;
+using Bookify.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bookify.API.Extensions;

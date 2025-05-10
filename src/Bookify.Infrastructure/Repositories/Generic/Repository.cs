@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
-using Bookify.ShareKernel.BaseEntity;
-using Bookify.ShareKernel.BaseRepository;
+using Bookify.ShareKernel.Entities;
+using Bookify.ShareKernel.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bookify.Infrastructure.Repositories.Generic;

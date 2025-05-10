@@ -2,7 +2,7 @@
 using Bookify.Application.Abstractions.Messaging;
 using Bookify.Application.Apartments.Dtos;
 using Bookify.Application.Apartments.Specifications;
-using Bookify.ShareKernel.Result;
+using Bookify.ShareKernel.Utilities;
 using Dapper;
 
 namespace Bookify.Application.Apartments.Queries;
@@ -10,14 +10,27 @@ namespace Bookify.Application.Apartments.Queries;
 internal sealed class SearchApartmentQueryHandler(ISqlConnectionFactory connectionFactory)
     : IQueryHandler<SearchApartmentsQuery, IReadOnlyList<ApartmentResponse>>
 {
+    // public async Task<Result<IReadOnlyList<ApartmentResponse>>> Handle(SearchApartmentsQuery request, CancellationToken cancellationToken)
+    // {
+    //     //using var connection = await connectionFactory.CreateOpenConnect();
+    //     using var connection = await connectionFactory.CreateOpenConnectionAsync();
+    //     var specification = new SearchApartmentsSpecification(request.StartDate, request.EndDate);
+    //     var apartments = await connection.QueryAsync<ApartmentResponse, AddressResponse, ApartmentResponse>(
+    //         specification.SqlQuery,
+    //         (apartment, address) =>
+    //         {
+    //             apartment.Address = address;
+    //             return apartment;
+    //         },
+    //         specification.Parameters,
+    //         //Khi thấy cột Country, Dapper hiểu: từ cột này trở đi, các field sẽ được gán vào AddressResponse thay vì ApartmentResponse.
+    //         splitOn: "Country");
+    //     //return apartments.ToList();
+    //     return Result.Success<IReadOnlyList<ApartmentResponse>>(apartments.ToList());
+    // }
+    
     public async Task<Result<IReadOnlyList<ApartmentResponse>>> Handle(SearchApartmentsQuery request, CancellationToken cancellationToken)
     {
-        // private readonly ISqlConnectionFactory _connectionFactory;
-        //
-        // public SearchApartmentQueryHandler(ISqlConnectionFactory connectionFactory)
-        // {
-        //     _connectionFactory = connectionFactory;
-        // }
         using var connection = connectionFactory.CreateConnection();
         var specification = new SearchApartmentsSpecification(request.StartDate, request.EndDate);
         var apartments = await connection.QueryAsync<ApartmentResponse, AddressResponse, ApartmentResponse>(

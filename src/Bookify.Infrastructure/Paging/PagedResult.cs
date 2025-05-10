@@ -1,4 +1,4 @@
-﻿using Bookify.ShareKernel.Paging;
+﻿using Bookify.ShareKernel.Utilities;
 
 namespace Bookify.Infrastructure.Paging;
 

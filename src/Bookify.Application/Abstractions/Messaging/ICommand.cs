@@ -1,4 +1,4 @@
-﻿using Bookify.ShareKernel.Result;
+﻿using Bookify.ShareKernel.Utilities;
 using MediatR;
 
 namespace Bookify.Application.Abstractions.Messaging;

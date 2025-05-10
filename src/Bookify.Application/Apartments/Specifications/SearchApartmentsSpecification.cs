@@ -1,6 +1,6 @@
 ﻿using Bookify.Application.Apartments.Dtos;
 using Bookify.Domain.Entities.Bookings.Enums;
-using Bookify.ShareKernel.Specification;
+using Bookify.ShareKernel.Specifications;
 
 namespace Bookify.Application.Apartments.Specifications;
 

@@ -1,4 +1,4 @@
-﻿using Bookify.ShareKernel.Error;
+﻿using Bookify.ShareKernel.Errors;
 
 namespace Bookify.Domain.Entities.Users;
 

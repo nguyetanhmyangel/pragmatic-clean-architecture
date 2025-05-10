@@ -3,7 +3,7 @@ using Bookify.Application.Abstractions.Messaging;
 using Bookify.Application.Bookings.Dtos;
 using Bookify.Application.Bookings.Specifications;
 using Bookify.Domain.Entities.Bookings;
-using Bookify.ShareKernel.Result;
+using Bookify.ShareKernel.Utilities;
 using Dapper;
 
 namespace Bookify.Application.Bookings.Queries;

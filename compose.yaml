@@ -1,22 +1,98 @@
 ﻿services:
+  # PostgreSQL cho app chính
+  bookify-db:
+    image: postgres:15.3
+    container_name: bookify-db
+    restart: always
+    environment:
+      POSTGRES_DB: bookify
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Admin@123
+    volumes:
+      - bookify_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - bookify-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # API ứng dụng chính
   bookify.api:
     image: ${DOCKER_REGISTRY-}bookifyapi
-    container_name: Bookify.Api
+    container_name: bookify-api
     build:
       context: .
       dockerfile: src/Bookify.Api/Dockerfile
     depends_on:
-      - bookify-db 
-    
-  bookify-db:
-    image: postgres:latest
-    container_name: Bookify.Db
-    environment:
-      - POSTGRES_DB=bookify
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=Admin@123
-    volumes:
-      - ./.container/database:/var/lib/postgresql/data
-    ports:
-      - 5432:5432
+      bookify-db:
+        condition: service_healthy
+    networks:
+      - bookify-network
+    # environment:
+    #   DB_HOST: bookify-db
+    #   DB_PORT: 5432
+    #   DB_NAME: bookify
+    #   DB_USER: postgres
+    #   DB_PASS: Admin@123
 
+  # PostgreSQL riêng cho Keycloak
+  keycloak-db:
+    image: postgres:15.3
+    container_name: keycloak-db
+    restart: always
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Admin@123
+    volumes:
+      - keycloak_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"  # Đổi cổng nếu trùng với bookify-db,giữ ánh xạ cổng cho host, nhưng dùng 5432 trong mạng
+    networks:
+      - bookify-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      
+  # Keycloak
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2.3
+    container_name: keycloak
+    command: start-dev
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: Admin@123
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: Admin@123
+      KC_PROXY: edge
+      JAVA_OPTS_APPEND: "-Xms512m -Xmx1024m -Duser.timezone=Asia/Ho_Chi_Minh"
+      KC_HTTP_ENABLED: "true"
+    ports:
+      - "18080:8080"
+    volumes:
+      - kc_themes:/opt/keycloak/themes
+    networks:
+      - bookify-network
+
+volumes:
+  bookify_data:
+    name: bookify_data
+  keycloak_data:
+    name: keycloak_data
+  kc_themes:
+    name: kc_themes
+    
+networks:
+  bookify-network:
+    driver: bridge

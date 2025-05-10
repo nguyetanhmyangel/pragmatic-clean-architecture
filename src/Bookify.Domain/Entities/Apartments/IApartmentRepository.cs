@@ -1,4 +1,4 @@
-﻿using Bookify.ShareKernel.BaseRepository;
+﻿using Bookify.ShareKernel.Repositories;
 
 namespace Bookify.Domain.Entities.Apartments;
 

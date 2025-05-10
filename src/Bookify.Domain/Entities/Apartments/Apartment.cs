@@ -1,6 +1,6 @@
 ﻿using Bookify.Domain.Entities.Apartments.Enums;
 using Bookify.Domain.Entities.Apartments.ValueObjects;
-using Bookify.ShareKernel.BaseEntity;
+using Bookify.ShareKernel.Entities;
 using Bookify.ShareKernel.ValueObjects;
 
 namespace Bookify.Domain.Entities.Apartments;

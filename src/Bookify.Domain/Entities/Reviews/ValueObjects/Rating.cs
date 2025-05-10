@@ -1,5 +1,5 @@
-﻿using Bookify.ShareKernel.Error;
-using Bookify.ShareKernel.Result;
+﻿using Bookify.ShareKernel.Errors;
+using Bookify.ShareKernel.Utilities;
 
 namespace Bookify.Domain.Entities.Reviews.ValueObjects;
 public sealed record Rating

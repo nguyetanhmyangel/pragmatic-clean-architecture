@@ -4,8 +4,8 @@ using Bookify.Domain.Entities.Bookings.Enums;
 using Bookify.Domain.Entities.Reviews.Events;
 using Bookify.Domain.Entities.Reviews.ValueObjects;
 using Bookify.Domain.Entities.Users;
-using Bookify.ShareKernel.BaseEntity;
-using Bookify.ShareKernel.Result;
+using Bookify.ShareKernel.Entities;
+using Bookify.ShareKernel.Utilities;
 
 namespace Bookify.Domain.Entities.Reviews;
 

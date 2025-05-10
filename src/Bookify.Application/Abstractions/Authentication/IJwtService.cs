@@ -1,4 +1,4 @@
-﻿using Bookify.ShareKernel.Result;
+﻿using Bookify.ShareKernel.Utilities;
 
 namespace Bookify.Application.Abstractions.Authentication;
 public interface IJwtService

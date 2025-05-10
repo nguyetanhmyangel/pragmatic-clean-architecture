@@ -1,6 +1,6 @@
 ﻿
 using Bookify.Application.Abstractions.Caching;
-using Bookify.ShareKernel.Result;
+using Bookify.ShareKernel.Utilities;
 using MediatR;
 using Microsoft.Extensions.Logging;
 

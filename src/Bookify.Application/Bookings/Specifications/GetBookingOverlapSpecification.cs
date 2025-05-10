@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using Bookify.Domain.Entities.Apartments;
 using Bookify.Domain.Entities.Bookings;
 using Bookify.Domain.Entities.Bookings.Enums;
-using Bookify.ShareKernel.Specification;
+using Bookify.ShareKernel.Specifications;
 using Bookify.ShareKernel.ValueObjects;
 
 namespace Bookify.Application.Bookings.Specifications;

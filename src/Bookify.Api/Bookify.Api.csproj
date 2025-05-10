@@ -15,7 +15,7 @@
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -30,6 +30,9 @@
 
     <ItemGroup>
       <Folder Include="Controllers\Users\" />
+      <Folder Include="Endpoints\Bookings\" />
+      <Folder Include="Endpoints\Users\" />
+      <Folder Include="Exceptions\" />
     </ItemGroup>
 
 </Project>

@@ -1,5 +1,5 @@
 ﻿using Bookify.Application.Bookings.Dtos;
-using Bookify.ShareKernel.Specification;
+using Bookify.ShareKernel.Specifications;
 
 namespace Bookify.Application.Bookings.Specifications;
 

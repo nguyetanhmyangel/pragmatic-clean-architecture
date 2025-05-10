@@ -4,10 +4,9 @@ using Bookify.Application.Bookings.Specifications;
 using Bookify.Domain.Entities.Apartments;
 using Bookify.Domain.Entities.Bookings;
 using Bookify.Domain.Entities.Users;
-using Bookify.ShareKernel.BaseRepository;
 using Bookify.ShareKernel.Exceptions;
-using Bookify.ShareKernel.Result;
-using Bookify.ShareKernel.Time;
+using Bookify.ShareKernel.Repositories;
+using Bookify.ShareKernel.Utilities;
 using Bookify.ShareKernel.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
@@ -58,7 +57,7 @@ public sealed class ReserveBookingCommandHandler(
 
         var duration = DateRange.Create(request.StartDate, request.EndDate);
         
-        // ✅ Sử dụng Specification trong Handler
+        // ✅ Sử dụng Specifications trong Handler
         var overlappingSpec = new GetBookingOverlapSpecification(apartment.Id, duration);
 
         var isOverlapping = await bookingRepository

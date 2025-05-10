@@ -1,6 +1,6 @@
 ﻿using Bookify.Domain.Entities.Users.Events;
 using Bookify.Domain.Entities.Users.ValueObjects;
-using Bookify.ShareKernel.BaseEntity;
+using Bookify.ShareKernel.Entities;
 
 namespace Bookify.Domain.Entities.Users;
 

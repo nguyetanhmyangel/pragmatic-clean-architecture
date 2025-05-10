@@ -1,4 +1,4 @@
-﻿using Bookify.ShareKernel.Event;
+﻿using Bookify.ShareKernel.Entities;
 
 namespace Bookify.Domain.Entities.Bookings.Events;
 

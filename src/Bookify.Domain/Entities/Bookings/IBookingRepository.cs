@@ -1,5 +1,5 @@
 ﻿using Bookify.Domain.Entities.Apartments;
-using Bookify.ShareKernel.BaseRepository;
+using Bookify.ShareKernel.Repositories;
 using Bookify.ShareKernel.ValueObjects;
 
 namespace Bookify.Domain.Entities.Bookings;

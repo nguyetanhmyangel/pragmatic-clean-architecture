@@ -2,8 +2,8 @@
 using Bookify.Domain.Entities.Apartments;
 using Bookify.Domain.Entities.Bookings.Events;
 using Bookify.Domain.Entities.Users;
-using Bookify.ShareKernel.BaseEntity;
-using Bookify.ShareKernel.Result;
+using Bookify.ShareKernel.Entities;
+using Bookify.ShareKernel.Utilities;
 using Bookify.ShareKernel.ValueObjects;
 
 namespace Bookify.Domain.Entities.Bookings;

@@ -3,13 +3,15 @@ using Bookify.Application.Abstractions.Email;
 using Bookify.Domain.Entities.Apartments;
 using Bookify.Domain.Entities.Bookings;
 using Bookify.Domain.Entities.Users;
-using Bookify.Infrastructure.Data;
+using Bookify.Infrastructure.Authentication;
+using Bookify.Infrastructure.Database;
 using Bookify.Infrastructure.Email;
 using Bookify.Infrastructure.Repositories;
-using Bookify.Infrastructure.Time;
-using Bookify.ShareKernel.BaseRepository;
-using Bookify.ShareKernel.Time;
+using Bookify.Infrastructure.Utilities;
+using Bookify.ShareKernel.Repositories;
+using Bookify.ShareKernel.Utilities;
 using Dapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -58,43 +60,42 @@ public static class ServiceCollectionExtension
     //     services.ConfigureOptions<ProcessOutboxMessageJobSetup>();
     // }
     //
-    // private static void AddAuthentication(IServiceCollection services, IConfiguration configuration)
-    // {
-    //     services
-    //         .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    //         .AddJwtBearer();
-    //
-    //     services.Configure<AuthenticationOptions>(configuration.GetSection("Authentication"));
-    //
-    //     services.ConfigureOptions<JwtBearerOptionsSetup>();
-    //
-    //     services.Configure<KeycloakOptions>(configuration.GetSection("Keycloak"));
-    //
-    //     services.AddTransient<AdminAuthorizationDelegatingHandler>();
-    //
-    //     services.AddHttpClient<IAuthenticationService, AuthenticationService>((serviceProvider, httpclient) =>
-    //     {
-    //         var keycloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
-    //
-    //         httpclient.BaseAddress = new Uri(keycloakOptions.AdminUrl);
-    //     }).AddHttpMessageHandler<AdminAuthorizationDelegatingHandler>();
-    //
-    //     services.AddHttpClient<IJwtService, JwtService>((serviceProvider, httpclient) =>
-    //     {
-    //         var keycloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
-    //
-    //         httpclient.BaseAddress = new Uri(keycloakOptions.TokenUrl);
-    //     });
-    //
-    //     services.AddHttpContextAccessor();
-    //
-    //     services.AddScoped<IUserContext, UserContext>();
-    // }
-    //
+    private static void AddAuthentication(IServiceCollection services, IConfiguration configuration)
+    {
+        //cấu hình xác thực JWT Bearer trong ứng dụng .NET Core, cho phép xác minh JWT từ một Identity Provider như Keycloak.
+        services
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer();
+    
+        services.Configure<AuthenticationOptions>(configuration.GetSection("Authentication"));
+        
+        services.ConfigureOptions<JwtBearerOptionsSetup>();
+        
+        services.Configure<KeycloakOptions>(configuration.GetSection("Keycloak"));
+        //
+        // services.AddTransient<AdminAuthorizationDelegatingHandler>();
+        //
+        // services.AddHttpClient<IAuthenticationService, AuthenticationService>((serviceProvider, httpclient) =>
+        // {
+        //     var keycloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
+        //
+        //     httpclient.BaseAddress = new Uri(keycloakOptions.AdminUrl);
+        // }).AddHttpMessageHandler<AdminAuthorizationDelegatingHandler>();
+        //
+        // services.AddHttpClient<IJwtService, JwtService>((serviceProvider, httpclient) =>
+        // {
+        //     var keycloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
+        //
+        //     httpclient.BaseAddress = new Uri(keycloakOptions.TokenUrl);
+        // });
+        services.AddHttpContextAccessor();
+        //services.AddScoped<IUserContext, UserContext>();
+    }
+    
     private static void AddPersistence(IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("Database") ??
-            throw new ArgumentNullException(nameof(configuration));
+            throw new ArgumentNullException("Connection string 'Database' is not found.");
     
         services.AddDbContext<ApplicationDbContext>(options =>
         {
@@ -105,12 +106,12 @@ public static class ServiceCollectionExtension
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IApartmentRepository, ApartmentRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
-    
         #endregion
     
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
     
-        services.AddSingleton<ISqlConnectionFactory>(_ => new SqlConnectionFactory(connectionString));
+        //services.AddSingleton<ISqlConnectionFactory>(_ => new SqlConnectionFactory(connectionString));
+        services.AddSingleton<ISqlConnectionFactory>(new SqlConnectionFactory(connectionString));
         //SqlMapper là class trong thư viện Dapper.
         //AddTypeHandler nghĩa là đăng ký một TypeHandler tùy chỉnh DateOnlyTypeHandler, 
         //được sử dụng để ánh xạ kiểu dữ liệu DateOnly trong ứng dụng của bạn với kiểu dữ liệu DateTime trong cơ sở dữ liệu.
