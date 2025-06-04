@@ -2,5 +2,5 @@
 
 public interface IEmailService
 {
-    Task SendAsync(Domain.Entities.Users.ValueObjects.Email recipient, string subject, string body);
+    Task SendAsync(ShareKernel.ValueObjects.Email recipient, string subject, string body);
 }

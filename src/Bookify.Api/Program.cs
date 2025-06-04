@@ -1,42 +1,67 @@
 using System.Diagnostics;
+using System.Reflection;
+using Asp.Versioning;
+using Asp.Versioning.ApiExplorer;
 using Bookify.Api.Extensions;
 using Bookify.API.Extensions;
+using Bookify.Api.OpenAiOptions;
 using Bookify.Application;
 using Bookify.Infrastructure;
 using Carter;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true);
 
-// Add services to the container.
+//// Add services to the container.
 // cấu hình carter 
 builder.Services.AddCarter();
+
 // REMARK: If you want to use Controllers, you'll need this.
 builder.Services.AddControllers();
-// Swashbuckle for Swagger/OpenAPI
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
 
-//builder.Services.AddSwaggerGen();
-builder.Services.AddSwaggerGen(options =>
+// Đăng ký API Versioning
+builder.Services.AddApiVersioning(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "My API Title",
-        Version = "v1",
-        Description = "My API description here"
-    });
+    //Đặt phiên bản API mặc định là 1.0
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    //yêu cầu không chỉ định phiên bản API, hệ thống sẽ sử dụng phiên bản mặc định đã được cấu hình
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    //thêm các header như api-supported-versions và api-deprecated-versions vào phản hồi, giúp client biết được các phiên bản API hiện có và những phiên bản đã bị loại bỏ.
+    options.ReportApiVersions = true;
+    options.ApiVersionReader = ApiVersionReader.Combine(
+        //Cấu hình cách đọc phiên bản API từ URL. Với UrlSegmentApiVersionReader, phiên bản API được chỉ định trong đường dẫn URL, ví dụ: /api/v1/products.
+        new UrlSegmentApiVersionReader(),
+        //Đọc phiên bản API từ header HTTP có tên X-Api-Version.
+        new HeaderApiVersionReader("X-Api-Version")
+    );
+})
+.AddApiExplorer(options =>
+{
+    //Định dạng tên nhóm cho các phiên bản API trong tài liệu Swagger. Với cấu hình này, các nhóm sẽ được đặt tên như v1, v2,...
+    options.GroupNameFormat = "'v'VVV"; 
+    //hệ thống sẽ tự động thay thế tham số {version} trong các route URL bằng giá trị phiên bản cụ thể, ví dụ: từ /api/v{version}/products thành /api/v1/products.
+    options.SubstituteApiVersionInUrl = true;
 });
+
+
+// Đăng ký Swagger (tuỳ chọn, để kiểm tra API)
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+//in order to configure swagger with different versions 
+builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
 
 // Đăng ký ErrorHandlingOptions (tuỳ cấu hình để ẩn/hiện lỗi)
 // phải đảm bảo appsettings.json có cấu hình đúng:"ErrorHandling": {"ExposeExceptionDetails": true}
 builder.Services.Configure<ErrorHandlingOptions>(
     builder.Configuration.GetSection("ErrorHandling"));
+
 // Đăng ký GlobalErrorHandler
 builder.Services.AddExceptionHandler<GlobalErrorHandler>();
 // (Tuỳ chọn) Đăng ký ActivitySource để theo dõi lỗi
@@ -52,29 +77,22 @@ if (builder.Environment.IsDevelopment())
 }
 
 var app = builder.Build();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     // Migration database
-    app.ApplyMigrations();
+    // app.ApplyMigrations();
     // REMARK: Uncomment if you want to seed initial data
-    app.SeedData();
+    // app.SeedData();
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
+    app.UseSwaggerUI(options =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API Title v1");
-        //c.RoutePrefix = string.Empty; // Đặt Swagger UI tại root (/)
+        foreach (var desc in app.Services.GetRequiredService<IApiVersionDescriptionProvider>().ApiVersionDescriptions)
+        {
+            options.SwaggerEndpoint($"/swagger/{desc.GroupName}/swagger.json", $"My API {desc.ApiVersion}");
+        }
     });
-    // app.UseSwaggerUI(options =>
-    // {
-    //     var descriptions = app.DescribeApiVersions();
-    //     foreach (var groupName in descriptions.Select(description => description.GroupName))
-    //     {
-    //         var url = $"/swagger/{groupName}/swagger.json";
-    //         var name = groupName.ToUpperInvariant();
-    //         options.SwaggerEndpoint(url, name);
-    //     }
-    // });
 }
 app.UseHttpsRedirection();
 // app.UseRequestContextLogging();
@@ -87,4 +105,8 @@ app.UseAuthorization();
 app.MapCarter();
 // REMARK: If you want to use Controllers, you'll need this.
 app.MapControllers();
+foreach (var endpoint in app.Services.GetRequiredService<EndpointDataSource>().Endpoints)
+{
+    Console.WriteLine($"Endpoint: {endpoint.DisplayName}");
+}
 app.Run();

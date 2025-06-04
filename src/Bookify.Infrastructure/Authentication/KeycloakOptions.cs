@@ -1,12 +1,15 @@
 ﻿namespace Bookify.Infrastructure.Authentication;
 public sealed class KeycloakOptions
 {
-    public string AdminUrl { get; set; } = string.Empty;
-    public string TokenUrl { get; set; } = string.Empty;
+    public string Realm { get; set; } = "bookify";
+    public string BaseUrl { get; set; } = string.Empty;
+    public string TokenEndpoint { get; set; } = default!;
+    public string AdminEndpoint { get; set; } = default!;
     public string AdminClientId { get; init; } = string.Empty;
     public string AdminClientSecret { get; init; } = string.Empty;
     public string AuthClientId { get; init; } = string.Empty;
     public string AuthClientSecret { get; init; } = string.Empty;
+    //public string TokenEndpoint { get; init; } = "http://localhost:18080/realms/bookify/protocol/openid-connect/token";
 }
 /*
     - AdminUrl: Địa chỉ của trang quản trị realm bookify.

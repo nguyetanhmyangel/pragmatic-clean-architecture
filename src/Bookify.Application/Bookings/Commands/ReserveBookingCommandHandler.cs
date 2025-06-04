@@ -1,5 +1,4 @@
-﻿using Bookify.Application.Abstractions.Extensions;
-using Bookify.Application.Abstractions.Messaging;
+﻿using Bookify.Application.Abstractions.Messaging;
 using Bookify.Application.Bookings.Specifications;
 using Bookify.Domain.Entities.Apartments;
 using Bookify.Domain.Entities.Bookings;
@@ -21,30 +20,6 @@ public sealed class ReserveBookingCommandHandler(
     IDateTimeProvider dateProvider)
     : ICommandHandler<ReserveBookingCommand, Guid>
 {
-    // private readonly IUserRepository _userRepository;
-    // private readonly IApartmentRepository _apartmentRepository;
-    // private readonly IBookingRepository _bookingRepository;
-    // private readonly IUnitOfWork _unitOfWork;
-    // private readonly PricingService _pricingService;
-    // private readonly IDateTimeProvider _dateProvider;
-    //
-    // public ReserveBookingCommandHandler(
-    //     IUserRepository userRepository,
-    //     IApartmentRepository apartmentRepository,
-    //     IBookingRepository bookingRepository,
-    //     IUnitOfWork unitOfWork,
-    //     PricingService pricingService,
-    //     IDateTimeProvider dateProvider)
-    // {
-    //     _userRepository = userRepository;
-    //     _apartmentRepository = apartmentRepository;
-    //     _bookingRepository = bookingRepository;
-    //     _unitOfWork = unitOfWork;
-    //     _pricingService = pricingService;
-    //     _dateProvider = dateProvider;
-    // }
-    
-    
     public async Task<Result<Guid>> Handle(ReserveBookingCommand request, CancellationToken cancellationToken)
     {
         var user = await userRepository.GetByIdAsync(new UserId(request.UserId), cancellationToken);
@@ -57,24 +32,17 @@ public sealed class ReserveBookingCommandHandler(
 
         var duration = DateRange.Create(request.StartDate, request.EndDate);
         
-        // ✅ Sử dụng Specifications trong Handler
+        // Sử dụng Specifications trong Handler
         var overlappingSpec = new GetBookingOverlapSpecification(apartment.Id, duration);
 
         var isOverlapping = await bookingRepository
-            .AsQueryable()
-            .ApplySpecification(overlappingSpec)
-            .AnyAsync(cancellationToken);
+            .AnyAsync(overlappingSpec, cancellationToken);
 
         if (isOverlapping)
             return Result.Failure<Guid>(BookingErrors.Conflict(apartment.Id.Value));
         try
         {
-            var booking = Booking.Reserve(
-            apartment,
-            user.Id,
-            duration,
-            dateProvider.UtcNow,
-            pricingService);
+            var booking = Booking.Reserve(apartment, user.Id, duration, dateProvider.UtcNow, pricingService);
             bookingRepository.Add(booking);
             await unitOfWork.SaveChangesAsync(cancellationToken);
             return booking.Id.Value;

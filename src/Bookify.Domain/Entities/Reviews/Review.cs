@@ -28,18 +28,13 @@ public class Review : Entity<ReviewId>
         CreatedOnUtc = createdOnUtc;
     }
 
-    protected Review() { }
+    private Review() : base() { }
 
     public ApartmentId ApartmentId { get; private set; }
-
     public BookingId BookingId { get; private set; }
-
     public UserId UserId { get; private set; }
-
     public Rating Rating { get; private set; }
-
     public string Comment { get; private set; }
-
     public DateTime CreatedOnUtc { get; private set; }
 
     public static Result<Review> Create(
@@ -60,8 +55,7 @@ public class Review : Entity<ReviewId>
             comment,
             createdOnUtc);
 
-        review.RaiseDomainEvent(new ReviewCreatedDomainEvent(review.Id));
-
+        //review.RaiseDomainEvent(new ReviewCreatedDomainEvent(review.Id));
         return review;
     }
 }

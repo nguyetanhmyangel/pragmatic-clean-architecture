@@ -10,4 +10,8 @@
       <ProjectReference Include="..\Bookify.ShareKernel\Bookify.ShareKernel.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Entities\Users\ValueObjects\" />
+    </ItemGroup>
+
 </Project>

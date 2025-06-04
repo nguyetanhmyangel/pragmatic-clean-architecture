@@ -1,20 +1,29 @@
-﻿using Bookify.Application.Abstractions.Data;
+﻿using Bookify.Application.Abstractions.Authentication;
+using Bookify.Application.Abstractions.Data;
 using Bookify.Application.Abstractions.Email;
 using Bookify.Domain.Entities.Apartments;
 using Bookify.Domain.Entities.Bookings;
 using Bookify.Domain.Entities.Users;
 using Bookify.Infrastructure.Authentication;
+using Bookify.Infrastructure.Authorization;
 using Bookify.Infrastructure.Database;
-using Bookify.Infrastructure.Email;
 using Bookify.Infrastructure.Repositories;
+using Bookify.Infrastructure.Repositories.Generic;
+using Bookify.Infrastructure.Services;
 using Bookify.Infrastructure.Utilities;
 using Bookify.ShareKernel.Repositories;
 using Bookify.ShareKernel.Utilities;
 using Dapper;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using AuthenticationOptions = Bookify.Infrastructure.Authentication.AuthenticationOptions;
+using AuthenticationService = Bookify.Infrastructure.Authentication.AuthenticationService;
+using IAuthenticationService = Bookify.Application.Abstractions.Authentication.IAuthenticationService;
 
 namespace Bookify.Infrastructure;
 
@@ -28,8 +37,7 @@ public static class ServiceCollectionExtension
         services.AddTransient<IEmailService, EmailService>();
 
         AddPersistence(services, configuration);
-        //
-        // AddAuthentication(services, configuration);
+        AddAuthentication(services, configuration);
         //
         // AddBackgroundJobs(services, configuration);
         //
@@ -62,34 +70,49 @@ public static class ServiceCollectionExtension
     //
     private static void AddAuthentication(IServiceCollection services, IConfiguration configuration)
     {
-        //cấu hình xác thực JWT Bearer trong ứng dụng .NET Core, cho phép xác minh JWT từ một Identity Provider như Keycloak.
+        //khi sử dụng [Authorize] hoặc .RequireAuthorization() để bảo vệ các endpoint,
+        //framework cần biết scheme xác thực nào sẽ được sử dụng để xác thực người dùng
+        //dòng cấu hình này chỉ định rằng JWT Bearer là scheme xác thực mặc định. Sau đó, AddJwtBearer() đăng ký
+        //handler cho scheme này, cho phép ứng dụng xác thực các token JWT được gửi từ một Identity Provider như Keycloak..
         services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer();
     
+        //sử dụng Options Pattern để ánh xạ (bind) các thiết lập từ phần cấu hình "Authentication"
+        //trong appsettings.json vào lớp AuthenticationOptions.
         services.Configure<AuthenticationOptions>(configuration.GetSection("Authentication"));
         
+        //đăng ký một lớp cấu hình tùy chỉnh (JwtBearerOptionsSetup) để thiết lập các tùy chọn
+        //cho xác thực JWT Bearer.
         services.ConfigureOptions<JwtBearerOptionsSetup>();
         
+        //sử dụng Options Pattern để ánh xạ (bind) các thiết lập từ phần cấu hình "Keycloak"
+        //trong appsettings.json vào lớp KeycloakOptions.
         services.Configure<KeycloakOptions>(configuration.GetSection("Keycloak"));
-        //
-        // services.AddTransient<AdminAuthorizationDelegatingHandler>();
-        //
-        // services.AddHttpClient<IAuthenticationService, AuthenticationService>((serviceProvider, httpclient) =>
-        // {
-        //     var keycloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
-        //
-        //     httpclient.BaseAddress = new Uri(keycloakOptions.AdminUrl);
-        // }).AddHttpMessageHandler<AdminAuthorizationDelegatingHandler>();
-        //
-        // services.AddHttpClient<IJwtService, JwtService>((serviceProvider, httpclient) =>
-        // {
-        //     var keycloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
-        //
-        //     httpclient.BaseAddress = new Uri(keycloakOptions.TokenUrl);
-        // });
+        
+        //Admin API client. đăng ký handler với lifetime Transient, nghĩa là một instance mới được tạo mỗi khi cần.
+        services.AddTransient<AdminAuthorizationDelegatingHandler>();
+        
+        // Mỗi khi inject IAuthenticationService sẽ:
+        // Tạo HttpClient với BaseAddress từ cấu hình Keycloak. Đăng ký IAuthenticationService với HttpClient vừa tạo.
+        // gắn AdminAuthorizationDelegatingHandler để tự động thêm token.
+        // Gửi HttpClient này vào constructor của AuthenticationService
+        services.AddHttpClient<IAuthenticationService, AuthenticationService>((serviceProvider, httpclient) =>
+        {
+            var keycloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
+            httpclient.BaseAddress = new Uri(keycloakOptions.BaseUrl);
+        })
+        .AddHttpMessageHandler<AdminAuthorizationDelegatingHandler>();
+        
+        // Token client (login, token exchange, etc.)
+        services.AddHttpClient<IJwtService, JwtService>((serviceProvider, httpclient) =>
+        {
+            var keycloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
+        
+            httpclient.BaseAddress = new Uri(keycloakOptions.BaseUrl);
+        });
         services.AddHttpContextAccessor();
-        //services.AddScoped<IUserContext, UserContext>();
+        services.AddScoped<IUserContext, UserContext>();
     }
     
     private static void AddPersistence(IServiceCollection services, IConfiguration configuration)
@@ -103,9 +126,18 @@ public static class ServiceCollectionExtension
         });
     
         #region Repositories
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IApartmentRepository, ApartmentRepository>();
-        services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped(typeof(IRepository<,>), typeof(GenericRepository<,>));
+        // services.AddScoped<IUserRepository, UserRepository>();
+        // services.AddScoped<IApartmentRepository, ApartmentRepository>();
+        // services.AddScoped<IBookingRepository, BookingRepository>();
+        
+        // sử dụng thư viện Scrutor để tự động đăng ký các repository 
+        services.Scan(scan => scan
+            .FromAssemblyOf<IUserRepository>() // hoặc typeof(UserRepository)
+            .AddClasses(classes => classes.Where(type => type.Name.EndsWith("Repository")))
+            .AsImplementedInterfaces()
+            .WithScopedLifetime()
+        );
         #endregion
     
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
@@ -118,16 +150,17 @@ public static class ServiceCollectionExtension
         SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
     }
     
-    // private static void AddAuthorization(IServiceCollection services)
-    // {
-    //     services.AddScoped<AuthorizationService>();
-    //
-    //     services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
-    //
-    //     services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
-    //
-    //     services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
-    // }
+    private static void AddAuthorization(IServiceCollection services)
+    {
+        services.AddScoped<AuthorizationService>();
+    
+        services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
+    
+        services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
+    
+        services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+    }
+    
     //
     // private static void AddCaching(IServiceCollection services, IConfiguration configuration)
     // {
@@ -146,13 +179,7 @@ public static class ServiceCollectionExtension
     //         .AddRedis(configuration.GetConnectionString("Cache"))
     //         .AddUrlGroup(new Uri(configuration["KeyCloak:BaseUrl"]), HttpMethod.Get, "keycloak");
     // }
-
-
-    ///<summary>
-    /// Add API Versioning when using Controllers
-    /// If using Minimal APIs, consider the Nuget Package "Asp.Versioning.Http"
-    /// </summary>
-    /// <param name="services"></param>
+    
     // private static void AddApiVersioning(IServiceCollection services)
     // {
     //     services

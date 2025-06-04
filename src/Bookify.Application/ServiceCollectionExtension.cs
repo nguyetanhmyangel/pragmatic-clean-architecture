@@ -23,10 +23,8 @@ public static class ServiceCollectionExtension
             //Lưu trữ kết quả của các truy vấn để cải thiện hiệu suất.
              configuration.AddOpenBehavior(typeof(QueryCachingBehavior<,>));
         });
-
         services.AddValidatorsFromAssembly(typeof(ServiceCollectionExtension).Assembly);
         services.AddTransient<PricingService>();
-
         return services;
     }
 }

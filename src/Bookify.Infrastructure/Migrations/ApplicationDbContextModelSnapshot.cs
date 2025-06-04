@@ -245,7 +245,7 @@ namespace Bookify.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("Email")
+                    b.Property<string>("Services")
                         .IsRequired()
                         .HasMaxLength(400)
                         .HasColumnType("character varying(400)")
@@ -271,7 +271,7 @@ namespace Bookify.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_users");
 
-                    b.HasIndex("Email")
+                    b.HasIndex("Services")
                         .IsUnique()
                         .HasDatabaseName("ix_users_email");
 

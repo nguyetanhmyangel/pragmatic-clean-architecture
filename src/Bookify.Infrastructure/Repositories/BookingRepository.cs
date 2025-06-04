@@ -4,6 +4,6 @@ using Bookify.Infrastructure.Repositories.Generic;
 
 namespace Bookify.Infrastructure.Repositories;
 internal sealed class BookingRepository(ApplicationDbContext dbContext)
-    : Repository<Booking, BookingId>(dbContext), IBookingRepository
+    : GenericRepository<Booking, BookingId>(dbContext), IBookingRepository
 {
 }

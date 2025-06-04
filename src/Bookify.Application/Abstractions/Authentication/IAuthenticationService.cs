@@ -1,4 +1,5 @@
 ﻿using Bookify.Domain.Entities.Users;
+using Bookify.ShareKernel.Utilities;
 
 namespace Bookify.Application.Abstractions.Authentication;
 public interface IAuthenticationService
@@ -10,8 +11,11 @@ public interface IAuthenticationService
     /// <param name="password"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>The identifier of the newly registered user</returns>
-    Task<string> RegisterAsync(
-        User user,
-        string password,
-        CancellationToken cancellationToken = default);
+    
+    // Task<string> RegisterAsync(
+    //     User user,
+    //     string password,
+    //     CancellationToken cancellationToken = default);
+    
+    Task<Result<string>> RegisterAsync(User user, string password, CancellationToken cancellationToken = default);
 }

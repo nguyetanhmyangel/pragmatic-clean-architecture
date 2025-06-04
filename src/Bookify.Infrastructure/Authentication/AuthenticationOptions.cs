@@ -2,7 +2,13 @@
 public class AuthenticationOptions
 {
     public string Audience { get; init; } = string.Empty;
-    public string MetadataUrl { get; set; } = string.Empty;
+    public string Realm { get; init; } = string.Empty;
+    public string AuthorityBaseUrl { get; init; } = string.Empty;
     public bool RequireHttpsMetadata { get; init; }
-    public string ValidIssuer { get; set; } = string.Empty;
+
+    public string MetadataUrl =>
+        $"{AuthorityBaseUrl.TrimEnd('/')}/realms/{Realm}/.well-known/openid-configuration";
+
+    public string ValidIssuer =>
+        $"{AuthorityBaseUrl.TrimEnd('/')}/realms/{Realm}";
 }

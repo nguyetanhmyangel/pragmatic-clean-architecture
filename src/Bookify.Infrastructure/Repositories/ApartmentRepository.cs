@@ -4,4 +4,4 @@ using Bookify.Infrastructure.Repositories.Generic;
 
 namespace Bookify.Infrastructure.Repositories;
 internal sealed class ApartmentRepository(ApplicationDbContext dbContext)
-    : Repository<Apartment, ApartmentId>(dbContext), IApartmentRepository;
+    : GenericRepository<Apartment, ApartmentId>(dbContext), IApartmentRepository;

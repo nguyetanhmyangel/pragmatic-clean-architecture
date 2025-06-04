@@ -5,8 +5,12 @@ using Bookify.ShareKernel.ValueObjects;
 
 namespace Bookify.Domain.Entities.Apartments;
 
+
+public record ApartmentId(Guid Value);
 public sealed class Apartment : Entity<ApartmentId>
 {
+    private readonly List<Amenity> _amenities = new();
+
     public Apartment(
         ApartmentId id,
         string name,
@@ -22,10 +26,10 @@ public sealed class Apartment : Entity<ApartmentId>
         Address = address;
         Price = price;
         CleaningFee = cleaningFee;
-        Amenities = amenities;
+        _amenities = amenities ?? new List<Amenity>();
     }
 
-    private Apartment() { }
+    private Apartment() : base() { }
 
     public string Name { get; private set; }
     public string Description { get; private set; }
@@ -33,5 +37,18 @@ public sealed class Apartment : Entity<ApartmentId>
     public Money Price { get; private set; }
     public Money CleaningFee { get; private set; }
     public DateTime? LastBookedOnUtc { get; internal set; }
-    public List<Amenity> Amenities { get; private set; }
+    public IReadOnlyCollection<Amenity> Amenities => _amenities.AsReadOnly();
+
+    public void AddAmenity(Amenity amenity)
+    {
+        if (amenity != null && !_amenities.Contains(amenity))
+        {
+            _amenities.Add(amenity);
+        }
+    }
+
+    public void RemoveAmenity(Amenity amenity)
+    {
+        _amenities.Remove(amenity);
+    }
 }

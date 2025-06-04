@@ -7,13 +7,15 @@ public class RolePermissionConfiguration : IEntityTypeConfiguration<RolePermissi
 {
     public void Configure(EntityTypeBuilder<RolePermission> builder)
     {
-        builder.ToTable("role_permissions");
-        builder.HasKey(rolePermission => new { rolePermission.RoleId, rolePermission.PermissionId });
+        builder.ToTable("role_permissions"); // Đã được định nghĩa trong RoleConfiguration.UsingEntity
+        builder.HasKey(rp => new { rp.RoleId, rp.PermissionId });
+
+        // Cấu hình các khóa ngoại đã được thực hiện trong RoleConfiguration.UsingEntity
+        // Không cần cấu hình lại HasOne().WithMany() ở đây nếu đã dùng UsingEntity 
+
+        // Seed data cho RolePermission
         builder.HasData(
-            new RolePermission
-            {
-                RoleId = Role.Registered.Id,
-                PermissionId = Permission.UsersRead.Id
-            });
+            RolePermission.Create(Role.Guest, Permission.UsersRead)
+        );
     }
 }

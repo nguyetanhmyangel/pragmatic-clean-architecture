@@ -1,25 +1,36 @@
-﻿namespace Bookify.ShareKernel.ValueObjects;
+﻿using Bookify.ShareKernel.Entities;
 
-public record DateRange
+namespace Bookify.ShareKernel.ValueObjects;
+
+public class DateRange : ValueObject
 {
-    private DateRange()
-    {
-    }
-
-    public DateOnly Start { get; init; }
-    public DateOnly End { get; init; }
+    public DateOnly Start { get; }
+    public DateOnly End { get; }
 
     public int LengthInDays => End.DayNumber - Start.DayNumber;
 
-    public static DateRange Create(DateOnly start,  DateOnly end)
+    private DateRange(DateOnly start, DateOnly end)
     {
         if (start > end)
             throw new InvalidOperationException("End date precedes start date");
 
-        return new DateRange
-        {
-            Start = start,
-            End = end
-        };
+        Start = start;
+        End = end;
+    }
+
+    // For EF Core or serialization
+    private DateRange()
+    {
+    }
+
+    public static DateRange Create(DateOnly start, DateOnly end)
+    {
+        return new DateRange(start, end);
+    }
+
+    protected override IEnumerable<object> GetEqualityComponents()
+    {
+        yield return Start;
+        yield return End;
     }
 }

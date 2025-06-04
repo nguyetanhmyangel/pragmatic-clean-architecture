@@ -1,6 +1,8 @@
-﻿namespace Bookify.ShareKernel.ValueObjects;
+﻿using Bookify.ShareKernel.Entities;
 
-public sealed record Currency
+namespace Bookify.ShareKernel.ValueObjects;
+
+public sealed class Currency : ValueObject
 {
     internal static readonly Currency None = new("");
     public static readonly Currency Usd = new("USD");
@@ -21,4 +23,9 @@ public sealed record Currency
         Usd,
         Eur
     };
+
+    protected override IEnumerable<object> GetEqualityComponents()
+    {
+        yield return Code;
+    }
 }

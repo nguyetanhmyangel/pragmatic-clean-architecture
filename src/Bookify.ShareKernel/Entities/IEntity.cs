@@ -2,7 +2,7 @@
 
 public interface IEntity
 {
-    IReadOnlyList<IDomainEvent> GetDomainEvents();
+    IReadOnlyCollection<IDomainEvent> GetDomainEvents();
 
     void ClearDomainEvents();
 }

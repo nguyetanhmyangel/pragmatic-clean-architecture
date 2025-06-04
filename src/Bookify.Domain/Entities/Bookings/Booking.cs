@@ -34,16 +34,13 @@ public class Booking : Entity<BookingId>
         CreatedOnUtc = createdOnUtc;
     }
 
-    protected Booking() { }
+    private Booking() : base() { }
 
     public ApartmentId ApartmentId { get; private set; }
     public UserId UserId { get; private set; }
     public DateRange Duration { get; private set; }
-    //Giá cho khoảng thời gian
     public Money PriceForPeriod { get; private set; }
-    //Phí vệ sinh 
     public Money CleaningFee { get; private set; }
-    //Phụ phí tiện ích
     public Money AmenitiesUpCharge { get; private set; }
     public Money TotalPrice { get; private set; }
     public BookingStatus Status { get; private set; }
@@ -56,7 +53,6 @@ public class Booking : Entity<BookingId>
     public static Booking Reserve(Apartment apartment, UserId userId, DateRange duration, DateTime utcNow, PricingService pricingService)
     {
         var pricingDetails = pricingService.CalculatePrice(apartment, duration);
-
         var booking = new Booking(
             BookingId.New(),
             apartment.Id,
@@ -69,9 +65,8 @@ public class Booking : Entity<BookingId>
             BookingStatus.Reserved,
             utcNow);
 
-        booking.RaiseDomainEvent(new BookingReservedDomainEvent(booking.Id));
+        //booking.RaiseDomainEvent(new BookingReservedDomainEvent(booking.Id));
         apartment.LastBookedOnUtc = utcNow;
-
         return booking;
     }
 
@@ -82,9 +77,7 @@ public class Booking : Entity<BookingId>
 
         Status = BookingStatus.Confirmed;
         ConfirmedOnUtc = utcNow;
-
-        RaiseDomainEvent(new BookingConfirmedDomainEvent(Id));
-
+        //RaiseDomainEvent(new BookingConfirmedDomainEvent(Id));
         return Result.Success();
     }
 
@@ -95,9 +88,7 @@ public class Booking : Entity<BookingId>
 
         Status = BookingStatus.Rejected;
         RejectedOnUtc = utcNow;
-
-        RaiseDomainEvent(new BookingRejectedDomainEvent(Id));
-
+        //RaiseDomainEvent(new BookingRejectedDomainEvent(Id));
         return Result.Success();
     }
 
@@ -108,9 +99,7 @@ public class Booking : Entity<BookingId>
 
         Status = BookingStatus.Completed;
         CompletedOnUtc = utcNow;
-
-        RaiseDomainEvent(new BookingCompletedDomainEvent(Id));
-
+        //RaiseDomainEvent(new BookingCompletedDomainEvent(Id));
         return Result.Success();
     }
 
@@ -124,10 +113,8 @@ public class Booking : Entity<BookingId>
             return Result.Failure(BookingErrors.AlreadyStarted);
 
         Status = BookingStatus.Cancelled;
-        CompletedOnUtc = utcNow;
-
-        RaiseDomainEvent(new BookingCancelledDomainEvent(Id));
-
+        CancelledOnUtc = utcNow;
+        //RaiseDomainEvent(new BookingCancelledDomainEvent(Id));
         return Result.Success();
     }
 }
